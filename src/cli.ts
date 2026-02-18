@@ -101,7 +101,7 @@ const command = defineCommand({
     // Write output
     const outputPath = path.resolve(args.output)
     await fsp.mkdir(path.dirname(outputPath), { recursive: true })
-    await fsp.writeFile(outputPath, `${JSON.stringify(results, null, 2)}\n`)
+    await fsp.writeFile(outputPath, `${JSON.stringify(results, undefined, 2)}\n`)
 
     const relativeOutput = path.relative(process.cwd(), outputPath)
 
