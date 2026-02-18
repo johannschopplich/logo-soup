@@ -83,7 +83,6 @@ const command = defineCommand({
     }
 
     // Header
-    console.log()
     console.log(`${colors.cyan('●')} ${colors.bold(pkg.name)} ${colors.dim(`v${pkg.version}`)}`)
     console.log()
 
