@@ -4,6 +4,7 @@ import * as path from 'node:path'
 import process from 'node:process'
 import { defineCommand, runMain } from 'citty'
 import { consola } from 'consola'
+import { colors } from 'consola/utils'
 import pkg from '../package.json' with { type: 'json' }
 import { analyzeDirectory } from './analyze.ts'
 import { BASE_SIZE, DEFAULT_EXTENSIONS, DENSITY_FACTOR, SCALE_FACTOR } from './defaults.ts'
@@ -71,36 +72,58 @@ const command = defineCommand({
       ? args.extensions.split(',').map(ext => ext.trim().toLowerCase())
       : DEFAULT_EXTENSIONS
 
-    consola.start(`Analyzing logos in ${dirPath}`)
-
     const metricsMap = await analyzeDirectory(dirPath, { extensions })
     const results: Record<string, NormalizedDimensions> = {}
+    const entries: [string, NormalizedDimensions][] = []
 
     for (const [file, metrics] of metricsMap) {
       const dimensions = normalize(metrics, { baseSize, scaleFactor, densityFactor })
       results[file] = dimensions
-      consola.log(`  ${file} → ${dimensions.width}×${dimensions.height}px`)
+      entries.push([file, dimensions])
     }
 
+    // Header
+    console.log()
+    console.log(`${colors.cyan('●')} ${colors.bold(pkg.name)} ${colors.dim(`v${pkg.version}`)}`)
+    console.log()
+
+    // Tree with aligned columns
+    const maxEntryLength = Math.max(...entries.map(([entry]) => entry.length))
+    const total = entries.length
+
+    for (const [i, [file, dimensions]] of entries.entries()) {
+      const isLast = i === total - 1
+      const branch = isLast ? '└─' : '├─'
+      const dimStr = `${dimensions.width}${colors.dim('×')}${dimensions.height}`
+      const padding = ' '.repeat(maxEntryLength - file.length + 2)
+      console.log(`  ${colors.dim(branch)} ${colors.cyan(file)}${padding}${dimStr}`)
+    }
+
+    // Write output
     const outputPath = path.resolve(args.output)
     await fsp.mkdir(path.dirname(outputPath), { recursive: true })
     await fsp.writeFile(outputPath, `${JSON.stringify(results, null, 2)}\n`)
 
-    consola.success(`Wrote ${Object.keys(results).length} entries to ${outputPath}`)
+    const relativeOutput = path.relative(process.cwd(), outputPath)
+
+    // Footer
+    console.log()
+    consola.success(`Wrote ${colors.bold(String(total))} entries to ${colors.cyan(relativeOutput)}`)
   },
 })
 
 function parseNumericArg(value: string | undefined, name: string, fallback: number): number {
-  if (value === undefined)
+  if (value == null)
     return fallback
 
-  const parsed = Number(value)
-  if (Number.isNaN(parsed)) {
+  const parsedNumber = Number(value)
+
+  if (Number.isNaN(parsedNumber)) {
     consola.error(`Invalid value for --${name}: "${value}" (expected a number)`)
     process.exit(1)
   }
 
-  return parsed
+  return parsedNumber
 }
 
 runMain(command)

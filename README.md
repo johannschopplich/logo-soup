@@ -10,7 +10,7 @@ logo-soup analyzes SVG/PNG images with `sharp`, detects their content bounding b
 ## Installation
 
 ```bash
-pnpm add logo-soup
+pnpm add -D logo-soup
 
 # Or run directly
 npx logo-soup ./logos

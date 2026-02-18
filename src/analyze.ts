@@ -61,10 +61,10 @@ export async function analyzeDirectory(
     ...analyzeOptions
   } = options
 
-  const files = (await fsp.readdir(dirPath)).filter((fileName) => {
-    const ext = path.extname(fileName).slice(1).toLowerCase()
-    return extensions.includes(ext)
-  })
+  const files = (await fsp.readdir(dirPath))
+    .filter(entry => extensions.includes(
+      path.extname(entry).slice(1).toLowerCase(),
+    ))
 
   const results = new Map<string, Metrics>()
 
