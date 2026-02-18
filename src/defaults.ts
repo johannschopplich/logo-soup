@@ -5,7 +5,7 @@ export const SAMPLE_MAX_SIZE: number = 200
 export const CONTRAST_THRESHOLD: number = 10
 
 /** Base size in pixels for the normalized output. */
-export const BASE_SIZE: number = 48
+export const BASE_SIZE: number = 64
 
 /** Aspect ratio normalization factor (0–1). */
 export const SCALE_FACTOR: number = 0.5

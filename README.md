@@ -22,17 +22,62 @@ npx logo-soup ./logos
 logo-soup ./public/logos -o logo-metrics.json
 ```
 
-Output JSON keys are filenames only (e.g. `"logo.svg"`), so consumers can prepend their own base path.
+Output keys are filenames only (e.g. `"logo.svg"`), so you can prepend your own base path.
 
 ```
 logo-soup <dir> [options]
 
 Options:
   --output, -o        Output JSON file path (default: "logo-metrics.json")
-  --base-size         Base size for normalization in px (default: 48)
+  --base-size         Base size for normalization in px (default: 64)
   --scale-factor      Aspect ratio normalization 0-1 (default: 0.5)
   --density-factor    Density compensation 0-1 (default: 0.5)
   --extensions, -e    Comma-separated file extensions (default: "svg,png")
+```
+
+## Usage
+
+Running the CLI produces a JSON file mapping each filename to its normalized dimensions:
+
+```json
+{
+  "acme-wordmark.svg": { "width": 143, "height": 28, "offsetX": 0, "offsetY": 0.5 },
+  "globex-icon.svg": { "width": 64, "height": 64, "offsetX": 0, "offsetY": 0 },
+  "initech-monogram.svg": { "width": 52, "height": 79, "offsetX": -0.4, "offsetY": 0 }
+}
+```
+
+`width` and `height` are pixel dimensions normalized so every logo feels the same visual size – use them directly as `width`/`height` attributes. `offsetX`/`offsetY` are optional sub-pixel corrections (see [Visual Center Offsets](#visual-center-offsets)).
+
+### Logo Strip
+
+The most common use case: a "trusted by" row or partner logo strip. Apply `width` and `height` directly – the normalization ensures all logos feel balanced side by side.
+
+```html
+<div class="flex flex-wrap items-center justify-center gap-8">
+  <img src="/logos/acme-wordmark.svg" width="143" height="28" alt="Acme">
+  <img src="/logos/globex-icon.svg" width="64" height="64" alt="Globex">
+  <img src="/logos/initech-monogram.svg" width="52" height="79" alt="Initech">
+</div>
+```
+
+> [!TIP]
+> The default `baseSize` is 64px, so a square logo renders at 64×64px. For a different base, pass `--base-size <n>` to the CLI (or `{ baseSize }` to `normalize()`), or scale uniformly with CSS – the proportions stay correct either way.
+
+### Visual Center Offsets
+
+Some logos have visual weight that doesn't match their geometric center – a play button or an arrow, for instance. `offsetX`/`offsetY` correct for this by nudging the logo toward its optical center.
+
+These offsets are typically small (< 2px) and `width`/`height` alone handle most of the balancing. For pixel-perfect alignment, apply them as CSS transforms:
+
+```html
+<img src="/logos/acme-wordmark.svg" width="143" height="28" style="transform: translate(0px, 0.5px)">
+```
+
+For horizontal strips where only vertical alignment matters, you can apply just the Y offset:
+
+```html
+<img src="/logos/acme-wordmark.svg" width="143" height="28" style="transform: translateY(0.5px)">
 ```
 
 ## Programmatic API
@@ -43,7 +88,7 @@ import { analyze, analyzeDirectory, normalize } from 'logo-soup'
 // Single file
 const metrics = await analyze('./logo.svg')
 if (metrics) {
-  const dimensions = normalize(metrics, { baseSize: 48 })
+  const dimensions = normalize(metrics)
   console.log(dimensions) // { width, height, offsetX, offsetY }
 }
 
@@ -104,7 +149,7 @@ Converts raw metrics into display dimensions using aspect ratio normalization wi
 function normalize(metrics: Metrics, options?: NormalizeOptions): NormalizedDimensions
 
 interface NormalizeOptions {
-  /** Base size in pixels (default: 48) */
+  /** Base size in pixels (default: 64) */
   baseSize?: number
   /** Aspect ratio normalization factor, 0–1 (default: 0.5) */
   scaleFactor?: number
