@@ -40,6 +40,7 @@
     "dist"
   ],
   "scripts": {
+    "dev": "node src/cli.ts",
     "build": "tsdown",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -48,8 +49,8 @@
     "release": "bumpp"
   },
   "dependencies": {
+    "ansis": "^4.2.0",
     "citty": "^0.2.1",
-    "consola": "^3.4.2",
     "sharp": "^0.34.5"
   },
   "devDependencies": {

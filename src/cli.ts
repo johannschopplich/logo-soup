@@ -2,12 +2,12 @@ import type { NormalizedDimensions } from './types.ts'
 import * as fsp from 'node:fs/promises'
 import * as path from 'node:path'
 import process from 'node:process'
+import * as ansis from 'ansis'
 import { defineCommand, runMain } from 'citty'
-import { consola } from 'consola'
-import { colors } from 'consola/utils'
 import pkg from '../package.json' with { type: 'json' }
 import { analyzeDirectory } from './analyze.ts'
 import { BASE_SIZE, DEFAULT_EXTENSIONS, DENSITY_FACTOR, SCALE_FACTOR } from './defaults.ts'
+import { log } from './log.ts'
 import { normalize } from './normalize.ts'
 
 const command = defineCommand({
@@ -53,12 +53,12 @@ const command = defineCommand({
     try {
       const stat = await fsp.stat(dirPath)
       if (!stat.isDirectory()) {
-        consola.error(`Not a directory: ${dirPath}`)
+        log.error(`Not a directory: ${dirPath}`)
         process.exit(1)
       }
     }
     catch {
-      consola.error(`Directory not found: ${dirPath}`)
+      log.error(`Directory not found: ${dirPath}`)
       process.exit(1)
     }
 
@@ -83,7 +83,7 @@ const command = defineCommand({
     }
 
     // Header
-    console.log(`${colors.cyan('●')} ${colors.bold(pkg.name)} ${colors.dim(`v${pkg.version}`)}`)
+    log.info(`${ansis.bold(pkg.name)} ${ansis.dim(`v${pkg.version}`)}`)
     console.log()
 
     // Tree with aligned columns
@@ -93,9 +93,9 @@ const command = defineCommand({
     for (const [i, [file, dimensions]] of entries.entries()) {
       const isLast = i === total - 1
       const branch = isLast ? '└─' : '├─'
-      const dimStr = `${dimensions.width}${colors.dim('×')}${dimensions.height}`
+      const dimStr = `${dimensions.width}${ansis.dim('×')}${dimensions.height}`
       const padding = ' '.repeat(maxEntryLength - file.length + 2)
-      console.log(`  ${colors.dim(branch)} ${colors.cyan(file)}${padding}${dimStr}`)
+      console.log(`  ${ansis.dim(branch)} ${ansis.cyan(file)}${padding}${dimStr}`)
     }
 
     // Write output
@@ -107,7 +107,7 @@ const command = defineCommand({
 
     // Footer
     console.log()
-    consola.success(`Wrote ${colors.bold(String(total))} entries to ${colors.cyan(relativeOutput)}`)
+    log.success(`Wrote ${ansis.bold(String(total))} entries to ${ansis.cyan(relativeOutput)}`)
   },
 })
 
@@ -118,7 +118,7 @@ function parseNumericArg(value: string | undefined, name: string, fallback: numb
   const parsedNumber = Number(value)
 
   if (Number.isNaN(parsedNumber)) {
-    consola.error(`Invalid value for --${name}: "${value}" (expected a number)`)
+    log.error(`Invalid value for --${name}: "${value}" (expected a number)`)
     process.exit(1)
   }
 
