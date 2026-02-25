@@ -66,20 +66,18 @@ export async function analyzeDirectory(
       path.extname(entry).slice(1).toLowerCase(),
     ))
 
+  const fileMetrics = await Promise.allSettled(
+    files.map(async file => ({
+      file,
+      metrics: await analyze(path.resolve(dirPath, file), analyzeOptions),
+    })),
+  )
+
   const results = new Map<string, Metrics>()
 
-  for (const file of files) {
-    const absolutePath = path.resolve(dirPath, file)
-
-    try {
-      const metrics = await analyze(absolutePath, analyzeOptions)
-
-      if (metrics) {
-        results.set(file, metrics)
-      }
-    }
-    catch {
-      // Skip files that cannot be analyzed (corrupt, unreadable, etc.)
+  for (const result of fileMetrics) {
+    if (result.status === 'fulfilled' && result.value.metrics) {
+      results.set(result.value.file, result.value.metrics)
     }
   }
 
