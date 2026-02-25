@@ -7,7 +7,7 @@ import { defineCommand, runMain } from 'citty'
 import pkg from '../package.json' with { type: 'json' }
 import { analyzeDirectory } from './analyze.ts'
 import { BASE_SIZE, DEFAULT_EXTENSIONS, DENSITY_FACTOR, SCALE_FACTOR } from './defaults.ts'
-import { log } from './log.ts'
+import * as log from './log.ts'
 import { normalize } from './normalize.ts'
 
 const command = defineCommand({
