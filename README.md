@@ -24,7 +24,7 @@ logo-soup ./public/logos -o logo-metrics.json
 
 Output keys are filenames only (e.g. `"logo.svg"`), so you can prepend your own base path.
 
-```
+```text
 logo-soup <dir> [options]
 
 Options:
