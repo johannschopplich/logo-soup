@@ -5,7 +5,7 @@
 
 Logos come in all shapes – wide wordmarks, dense icons, tall monograms – and displaying them at the same CSS size makes some look huge while others nearly vanish.
 
-logo-soup analyzes SVG/PNG images with `sharp`, detects their content bounding box, measures pixel density and visual center, then normalizes dimensions so every logo feels perceptually balanced.
+logo-soup analyzes SVG/PNG images with `sharp`, detects their content bounding box, measures pixel density and visual center, then normalizes dimensions so every logo feels perceptually balanced. Transparency is not required – for opaque images, the background color is estimated from the corner pixels and content is detected by contrast against it.
 
 ## Installation
 
@@ -126,7 +126,7 @@ interface Metrics {
 
 ### `analyzeDirectory`
 
-Analyzes all matching images in a directory. Returns a `Map<string, Metrics>` where keys are filenames.
+Analyzes all matching images in a directory. Returns a `Map<string, Metrics>` where keys are filenames. Files that fail to decode are skipped instead of failing the whole batch.
 
 **Type Declaration:**
 
