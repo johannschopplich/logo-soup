@@ -40,7 +40,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "node src/cli.ts",
+    "dev": "node src/entry.ts",
     "build": "tsdown",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
