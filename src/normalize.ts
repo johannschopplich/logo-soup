@@ -15,11 +15,11 @@ export function normalize(
 
   const ratio = metrics.contentRatio
 
-  // Dan Paquette's aspect ratio normalization
+  // Dan Paquette's aspect ratio normalization.
   let width = ratio ** scaleFactor * baseSize
   let height = width / ratio
 
-  // Density compensation
+  // Density compensation.
   if (densityFactor > 0 && metrics.pixelDensity > 0) {
     const densityRatio = metrics.pixelDensity / referenceDensity
     const densityScale = (1 / densityRatio) ** (densityFactor * densityDampening)

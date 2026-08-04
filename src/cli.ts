@@ -60,7 +60,7 @@ export const mainCommand: CommandDef<ArgsDef> = defineCommand({
   args: analyzeArgs,
   async run({ args }) {
     // Annotating the export widens citty's `args` to its index signature, which
-    // loses every declared type – this restates the shape of `analyzeArgs`
+    // loses every declared type – this restates the shape of `analyzeArgs`.
     const options = args as unknown as AnalyzeOptions
 
     try {
@@ -86,7 +86,7 @@ export const mainCommand: CommandDef<ArgsDef> = defineCommand({
       }
 
       // The report shares stderr with the log helpers, so the JSON file stays the
-      // only thing a caller has to parse
+      // only thing a caller has to parse.
       log.info(`${ansis.bold(pkg.name)} ${ansis.dim(`v${pkg.version}`)}`)
       log.blankLine()
 
