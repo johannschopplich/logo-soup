@@ -8,6 +8,7 @@ import { defineCommand } from 'citty'
 import pkg from '../package.json' with { type: 'json' }
 import { analyzeDirectory } from './analyze.ts'
 import { BASE_SIZE, DEFAULT_EXTENSIONS, DENSITY_FACTOR, SCALE_FACTOR } from './defaults.ts'
+import { CliError, commonArgs, withCleanErrors } from './errors.ts'
 import * as log from './log.ts'
 import { normalize } from './normalize.ts'
 
@@ -21,6 +22,7 @@ interface AnalyzeOptions {
 }
 
 const analyzeArgs: ArgsDef = {
+  ...commonArgs,
   'dir': {
     type: 'positional',
     description: 'Directory containing logo images',
@@ -51,7 +53,7 @@ const analyzeArgs: ArgsDef = {
   },
 }
 
-export const mainCommand: CommandDef<ArgsDef> = defineCommand({
+export const mainCommand: CommandDef<ArgsDef> = withCleanErrors(defineCommand({
   meta: {
     name: pkg.name,
     version: pkg.version,
@@ -63,67 +65,61 @@ export const mainCommand: CommandDef<ArgsDef> = defineCommand({
     // loses every declared type – this restates the shape of `analyzeArgs`.
     const options = args as unknown as AnalyzeOptions
 
-    try {
-      const dirPath = path.resolve(options.dir)
-      await assertDirectory(dirPath)
+    const dirPath = path.resolve(options.dir)
+    await assertDirectory(dirPath)
 
-      const baseSize = parseNumericArg(options['base-size'], 'base-size', BASE_SIZE)
-      const scaleFactor = parseNumericArg(options['scale-factor'], 'scale-factor', SCALE_FACTOR)
-      const densityFactor = parseNumericArg(options['density-factor'], 'density-factor', DENSITY_FACTOR)
+    const baseSize = parseNumericArg(options['base-size'], 'base-size', BASE_SIZE)
+    const scaleFactor = parseNumericArg(options['scale-factor'], 'scale-factor', SCALE_FACTOR)
+    const densityFactor = parseNumericArg(options['density-factor'], 'density-factor', DENSITY_FACTOR)
 
-      const extensions = options.extensions
-        ? options.extensions.split(',').map(ext => ext.trim().toLowerCase())
-        : DEFAULT_EXTENSIONS
+    const extensions = options.extensions
+      ? options.extensions.split(',').map(ext => ext.trim().toLowerCase())
+      : DEFAULT_EXTENSIONS
 
-      const metricsMap = await analyzeDirectory(dirPath, { extensions })
-      const results: Record<string, NormalizedDimensions> = {}
-      const entries: [string, NormalizedDimensions][] = []
+    const metricsMap = await analyzeDirectory(dirPath, { extensions })
+    const results: Record<string, NormalizedDimensions> = {}
+    const entries: [string, NormalizedDimensions][] = []
 
-      for (const [file, metrics] of metricsMap) {
-        const dimensions = normalize(metrics, { baseSize, scaleFactor, densityFactor })
-        results[file] = dimensions
-        entries.push([file, dimensions])
-      }
-
-      // The report shares stderr with the log helpers, so the JSON file stays the
-      // only thing a caller has to parse.
-      log.info(`${ansis.bold(pkg.name)} ${ansis.dim(`v${pkg.version}`)}`)
-      log.blankLine()
-
-      const maxEntryLength = Math.max(...entries.map(([entry]) => entry.length))
-      const total = entries.length
-
-      for (const [i, [file, dimensions]] of entries.entries()) {
-        const isLast = i === total - 1
-        const branch = isLast ? '└─' : '├─'
-        const dimensionLabel = `${dimensions.width}${ansis.dim('×')}${dimensions.height}`
-        const padding = ' '.repeat(maxEntryLength - file.length + 2)
-        process.stderr.write(`  ${ansis.dim(branch)} ${ansis.cyan(file)}${padding}${dimensionLabel}\n`)
-      }
-
-      const outputPath = path.resolve(options.output)
-      await fsp.mkdir(path.dirname(outputPath), { recursive: true })
-      await fsp.writeFile(outputPath, `${JSON.stringify(results, undefined, 2)}\n`)
-
-      const relativeOutput = path.relative(process.cwd(), outputPath)
-
-      log.blankLine()
-      log.success(`Wrote ${ansis.bold(String(total))} entries to ${ansis.cyan(relativeOutput)}`)
+    for (const [file, metrics] of metricsMap) {
+      const dimensions = normalize(metrics, { baseSize, scaleFactor, densityFactor })
+      results[file] = dimensions
+      entries.push([file, dimensions])
     }
-    catch (caught) {
-      log.error(caught instanceof Error ? caught.message : String(caught))
-      process.exitCode = 1
+
+    // The report shares stderr with the log helpers, so the JSON file stays the
+    // only thing a caller has to parse.
+    log.info(`${ansis.bold(pkg.name)} ${ansis.dim(`v${pkg.version}`)}`)
+    log.blankLine()
+
+    const maxEntryLength = Math.max(...entries.map(([entry]) => entry.length))
+    const total = entries.length
+
+    for (const [i, [file, dimensions]] of entries.entries()) {
+      const isLast = i === total - 1
+      const branch = isLast ? '└─' : '├─'
+      const dimensionLabel = `${dimensions.width}${ansis.dim('×')}${dimensions.height}`
+      const padding = ' '.repeat(maxEntryLength - file.length + 2)
+      process.stderr.write(`  ${ansis.dim(branch)} ${ansis.cyan(file)}${padding}${dimensionLabel}\n`)
     }
+
+    const outputPath = path.resolve(options.output)
+    await fsp.mkdir(path.dirname(outputPath), { recursive: true })
+    await fsp.writeFile(outputPath, `${JSON.stringify(results, undefined, 2)}\n`)
+
+    const relativeOutput = path.relative(process.cwd(), outputPath)
+
+    log.blankLine()
+    log.success(`Wrote ${ansis.bold(String(total))} entries to ${ansis.cyan(relativeOutput)}`)
   },
-})
+}))
 
 async function assertDirectory(dirPath: string): Promise<void> {
   const stat = await fsp.stat(dirPath).catch(() => {
-    throw new Error(`Directory not found: ${dirPath}`)
+    throw new CliError(`Directory not found: ${dirPath}`)
   })
 
   if (!stat.isDirectory())
-    throw new Error(`Not a directory: ${dirPath}`)
+    throw new CliError(`Not a directory: ${dirPath}`)
 }
 
 function parseNumericArg(value: string | undefined, name: string, fallback: number): number {
@@ -133,7 +129,7 @@ function parseNumericArg(value: string | undefined, name: string, fallback: numb
   const parsedNumber = Number(value)
 
   if (Number.isNaN(parsedNumber))
-    throw new Error(`Invalid value for --${name}: "${value}" (expected a number)`)
+    throw new CliError(`Invalid value for --${name}: "${value}" (expected a number)`)
 
   return parsedNumber
 }
