@@ -19,5 +19,4 @@ export const DENSITY_DAMPENING: number = 0.5
 /** Reference density value for compensation scaling. */
 export const REFERENCE_DENSITY: number = 0.35
 
-/** Default file extensions to scan. */
 export const DEFAULT_EXTENSIONS: string[] = ['svg', 'png']
