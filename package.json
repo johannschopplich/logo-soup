@@ -50,8 +50,8 @@
   },
   "dependencies": {
     "ansis": "^4.3.1",
-    "citty": "^0.2.2",
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.3",
+    "utilful": "link:../utils"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.2.0",

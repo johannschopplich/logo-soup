@@ -11,8 +11,6 @@ const SQUARE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
 </svg>
 `
 
-// In-process runs observe neither citty's builtin flags, which `runMain` owns,
-// nor the exit code the shell sees.
 describe('logo-soup CLI as a child process', () => {
   it('prints its version', async () => {
     const { stdout, exitCode } = await runCliProcess(['--version'])

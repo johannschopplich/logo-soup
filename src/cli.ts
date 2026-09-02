@@ -1,27 +1,25 @@
-import type { ArgsDef, CommandDef } from 'citty'
+import type { ArgsDef, CommandDef } from 'utilful/cli'
 import type { NormalizedDimensions } from './types.ts'
 import * as fsp from 'node:fs/promises'
 import * as path from 'node:path'
 import process from 'node:process'
 import * as ansis from 'ansis'
-import { defineCommand } from 'citty'
+import { CliError, commonArgs, defineCommand, log } from 'utilful/cli'
 import pkg from '../package.json' with { type: 'json' }
 import { analyzeDirectory } from './analyze.ts'
 import { BASE_SIZE, DEFAULT_EXTENSIONS, DENSITY_FACTOR, SCALE_FACTOR } from './defaults.ts'
-import { CliError, commonArgs, withCleanErrors } from './errors.ts'
-import * as log from './log.ts'
 import { normalize } from './normalize.ts'
 
-interface AnalyzeOptions {
-  'dir': string
-  'output': string
-  'base-size': string | undefined
-  'scale-factor': string | undefined
-  'density-factor': string | undefined
-  'extensions': string | undefined
+interface AnalyzeArgs extends ArgsDef {
+  'dir': { type: 'positional', description: string, required: true }
+  'output': { type: 'string', alias: string, description: string, default: string }
+  'base-size': { type: 'string', description: string }
+  'scale-factor': { type: 'string', description: string }
+  'density-factor': { type: 'string', description: string }
+  'extensions': { type: 'string', alias: string, description: string }
 }
 
-const analyzeArgs: ArgsDef = {
+const analyzeArgs: AnalyzeArgs = {
   ...commonArgs,
   'dir': {
     type: 'positional',
@@ -53,7 +51,7 @@ const analyzeArgs: ArgsDef = {
   },
 }
 
-export const mainCommand: CommandDef<ArgsDef> = withCleanErrors(defineCommand({
+export const mainCommand: CommandDef<AnalyzeArgs> = defineCommand({
   meta: {
     name: pkg.name,
     version: pkg.version,
@@ -61,19 +59,15 @@ export const mainCommand: CommandDef<ArgsDef> = withCleanErrors(defineCommand({
   },
   args: analyzeArgs,
   async run({ args }) {
-    // Annotating the export widens citty's `args` to its index signature, which
-    // loses every declared type – this restates the shape of `analyzeArgs`.
-    const options = args as unknown as AnalyzeOptions
-
-    const dirPath = path.resolve(options.dir)
+    const dirPath = path.resolve(args.dir)
     await assertDirectory(dirPath)
 
-    const baseSize = parseNumericArg(options['base-size'], 'base-size', BASE_SIZE)
-    const scaleFactor = parseNumericArg(options['scale-factor'], 'scale-factor', SCALE_FACTOR)
-    const densityFactor = parseNumericArg(options['density-factor'], 'density-factor', DENSITY_FACTOR)
+    const baseSize = parseNumericArg(args['base-size'], 'base-size', BASE_SIZE)
+    const scaleFactor = parseNumericArg(args['scale-factor'], 'scale-factor', SCALE_FACTOR)
+    const densityFactor = parseNumericArg(args['density-factor'], 'density-factor', DENSITY_FACTOR)
 
-    const extensions = options.extensions
-      ? options.extensions.split(',').map(ext => ext.trim().toLowerCase())
+    const extensions = args.extensions
+      ? args.extensions.split(',').map(ext => ext.trim().toLowerCase())
       : DEFAULT_EXTENSIONS
 
     const metricsMap = await analyzeDirectory(dirPath, { extensions })
@@ -102,7 +96,7 @@ export const mainCommand: CommandDef<ArgsDef> = withCleanErrors(defineCommand({
       process.stderr.write(`  ${ansis.dim(branch)} ${ansis.cyan(file)}${padding}${dimensionLabel}\n`)
     }
 
-    const outputPath = path.resolve(options.output)
+    const outputPath = path.resolve(args.output)
     await fsp.mkdir(path.dirname(outputPath), { recursive: true })
     await fsp.writeFile(outputPath, `${JSON.stringify(results, undefined, 2)}\n`)
 
@@ -111,7 +105,7 @@ export const mainCommand: CommandDef<ArgsDef> = withCleanErrors(defineCommand({
     log.blankLine()
     log.success(`Wrote ${ansis.bold(String(total))} entries to ${ansis.cyan(relativeOutput)}`)
   },
-}))
+})
 
 async function assertDirectory(dirPath: string): Promise<void> {
   const stat = await fsp.stat(dirPath).catch(() => {
