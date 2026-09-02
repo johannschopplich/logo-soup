@@ -3,12 +3,16 @@ import type { NormalizedDimensions } from './types.ts'
 import * as fsp from 'node:fs/promises'
 import * as path from 'node:path'
 import process from 'node:process'
-import * as ansis from 'ansis'
+import { styleText } from 'node:util'
 import { CliError, commonArgs, defineCommand, log } from 'utilful/cli'
 import pkg from '../package.json' with { type: 'json' }
 import { analyzeDirectory } from './analyze.ts'
 import { BASE_SIZE, DEFAULT_EXTENSIONS, DENSITY_FACTOR, SCALE_FACTOR } from './defaults.ts'
 import { normalize } from './normalize.ts'
+
+function color(style: Parameters<typeof styleText>[0], text: string): string {
+  return styleText(style, text, { stream: process.stderr })
+}
 
 interface AnalyzeArgs extends ArgsDef {
   'dir': { type: 'positional', description: string, required: true }
@@ -82,7 +86,7 @@ export const mainCommand: CommandDef<AnalyzeArgs> = defineCommand({
 
     // The report shares stderr with the log helpers, so the JSON file stays the
     // only thing a caller has to parse.
-    log.info(`${ansis.bold(pkg.name)} ${ansis.dim(`v${pkg.version}`)}`)
+    log.info(`${color('bold', pkg.name)} ${color('dim', `v${pkg.version}`)}`)
     log.blankLine()
 
     const maxEntryLength = Math.max(...entries.map(([entry]) => entry.length))
@@ -91,9 +95,9 @@ export const mainCommand: CommandDef<AnalyzeArgs> = defineCommand({
     for (const [i, [file, dimensions]] of entries.entries()) {
       const isLast = i === total - 1
       const branch = isLast ? '└─' : '├─'
-      const dimensionLabel = `${dimensions.width}${ansis.dim('×')}${dimensions.height}`
+      const dimensionLabel = `${dimensions.width}${color('dim', '×')}${dimensions.height}`
       const padding = ' '.repeat(maxEntryLength - file.length + 2)
-      process.stderr.write(`  ${ansis.dim(branch)} ${ansis.cyan(file)}${padding}${dimensionLabel}\n`)
+      process.stderr.write(`  ${color('dim', branch)} ${color('cyan', file)}${padding}${dimensionLabel}\n`)
     }
 
     const outputPath = path.resolve(args.output)
@@ -103,7 +107,7 @@ export const mainCommand: CommandDef<AnalyzeArgs> = defineCommand({
     const relativeOutput = path.relative(process.cwd(), outputPath)
 
     log.blankLine()
-    log.success(`Wrote ${ansis.bold(String(total))} entries to ${ansis.cyan(relativeOutput)}`)
+    log.success(`Wrote ${color('bold', String(total))} entries to ${color('cyan', relativeOutput)}`)
   },
 })
 
