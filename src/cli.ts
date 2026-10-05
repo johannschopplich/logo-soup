@@ -30,20 +30,24 @@ const analyzeArgs = {
   },
   'base-size': {
     type: 'string',
-    description: `Base size for normalization in px (default: ${BASE_SIZE})` as string,
+    description: 'Base size for normalization in px',
+    default: String(BASE_SIZE) as string,
   },
   'scale-factor': {
     type: 'string',
-    description: `Aspect ratio normalization 0-1 (default: ${SCALE_FACTOR})` as string,
+    description: 'Aspect ratio normalization 0-1',
+    default: String(SCALE_FACTOR) as string,
   },
   'density-factor': {
     type: 'string',
-    description: `Density compensation 0-1 (default: ${DENSITY_FACTOR})` as string,
+    description: 'Density compensation 0-1',
+    default: String(DENSITY_FACTOR) as string,
   },
   'extensions': {
     type: 'string',
     alias: 'e',
-    description: `Comma-separated file extensions (default: "${DEFAULT_EXTENSIONS.join(',')}")` as string,
+    description: 'Comma-separated file extensions',
+    default: DEFAULT_EXTENSIONS.join(',') as string,
   },
 } as const
 
@@ -58,9 +62,9 @@ export const mainCommand: CommandDef<typeof analyzeArgs> = defineCommand({
     const dirPath = path.resolve(args.dir)
     await assertDirectory(dirPath)
 
-    const baseSize = parseNumericArg(args['base-size'], 'base-size', BASE_SIZE)
-    const scaleFactor = parseNumericArg(args['scale-factor'], 'scale-factor', SCALE_FACTOR)
-    const densityFactor = parseNumericArg(args['density-factor'], 'density-factor', DENSITY_FACTOR)
+    const baseSize = parseNumericArg(args['base-size'], 'base-size')
+    const scaleFactor = parseNumericArg(args['scale-factor'], 'scale-factor')
+    const densityFactor = parseNumericArg(args['density-factor'], 'density-factor')
 
     const extensions = args.extensions
       ? args.extensions.split(',').map(ext => ext.trim().toLowerCase())
@@ -112,10 +116,7 @@ async function assertDirectory(dirPath: string): Promise<void> {
     throw new CliError(`Not a directory: ${dirPath}`)
 }
 
-function parseNumericArg(value: string | undefined, name: string, fallback: number): number {
-  if (value == null)
-    return fallback
-
+function parseNumericArg(value: string, name: string): number {
   const parsedNumber = Number(value)
 
   if (Number.isNaN(parsedNumber))
