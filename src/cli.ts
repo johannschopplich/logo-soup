@@ -1,10 +1,10 @@
-import type { ArgsDef, CommandDef } from 'utilful/cli'
+import type { CommandDef } from 'utilful/cli'
 import type { NormalizedDimensions } from './types.ts'
 import * as fsp from 'node:fs/promises'
 import * as path from 'node:path'
 import process from 'node:process'
 import { styleText } from 'node:util'
-import { CliError, commonArgs, defineCommand, log } from 'utilful/cli'
+import { CliError, defineCommand, log } from 'utilful/cli'
 import pkg from '../package.json' with { type: 'json' }
 import { analyzeDirectory } from './analyze.ts'
 import { BASE_SIZE, DEFAULT_EXTENSIONS, DENSITY_FACTOR, SCALE_FACTOR } from './defaults.ts'
@@ -14,17 +14,9 @@ function color(style: Parameters<typeof styleText>[0], text: string): string {
   return styleText(style, text, { stream: process.stderr })
 }
 
-interface AnalyzeArgs extends ArgsDef {
-  'dir': { type: 'positional', description: string, required: true }
-  'output': { type: 'string', alias: string, description: string, default: string }
-  'base-size': { type: 'string', description: string }
-  'scale-factor': { type: 'string', description: string }
-  'density-factor': { type: 'string', description: string }
-  'extensions': { type: 'string', alias: string, description: string }
-}
-
-const analyzeArgs: AnalyzeArgs = {
-  ...commonArgs,
+// The exported command's type refers to this literal, and `isolatedDeclarations`
+// cannot infer a computed value inside it, so each one asserts its type.
+const analyzeArgs = {
   'dir': {
     type: 'positional',
     description: 'Directory containing logo images',
@@ -38,24 +30,24 @@ const analyzeArgs: AnalyzeArgs = {
   },
   'base-size': {
     type: 'string',
-    description: `Base size for normalization in px (default: ${BASE_SIZE})`,
+    description: `Base size for normalization in px (default: ${BASE_SIZE})` as string,
   },
   'scale-factor': {
     type: 'string',
-    description: `Aspect ratio normalization 0-1 (default: ${SCALE_FACTOR})`,
+    description: `Aspect ratio normalization 0-1 (default: ${SCALE_FACTOR})` as string,
   },
   'density-factor': {
     type: 'string',
-    description: `Density compensation 0-1 (default: ${DENSITY_FACTOR})`,
+    description: `Density compensation 0-1 (default: ${DENSITY_FACTOR})` as string,
   },
   'extensions': {
     type: 'string',
     alias: 'e',
-    description: `Comma-separated file extensions (default: "${DEFAULT_EXTENSIONS.join(',')}")`,
+    description: `Comma-separated file extensions (default: "${DEFAULT_EXTENSIONS.join(',')}")` as string,
   },
-}
+} as const
 
-export const mainCommand: CommandDef<AnalyzeArgs> = defineCommand({
+export const mainCommand: CommandDef<typeof analyzeArgs> = defineCommand({
   meta: {
     name: pkg.name,
     version: pkg.version,
