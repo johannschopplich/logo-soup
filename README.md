@@ -22,8 +22,6 @@ npx logo-soup ./logos
 logo-soup ./public/logos -o logo-metrics.json
 ```
 
-Output keys are filenames only (e.g. `"logo.svg"`), so you can prepend your own base path.
-
 ```text
 logo-soup <dir> [options]
 
@@ -33,11 +31,12 @@ Options:
   --scale-factor      Aspect ratio normalization 0-1 (default: 0.5)
   --density-factor    Density compensation 0-1 (default: 0.5)
   --extensions, -e    Comma-separated file extensions (default: "svg,png")
+  --verbose           Print the stack trace on failure
 ```
 
 ## Usage
 
-Running the CLI produces a JSON file mapping each filename to its normalized dimensions:
+Running the CLI produces a JSON file mapping each filename to its normalized dimensions. The keys carry no directory, so you can prepend your own base path:
 
 ```json
 {
@@ -47,11 +46,11 @@ Running the CLI produces a JSON file mapping each filename to its normalized dim
 }
 ```
 
-`width` and `height` are pixel dimensions normalized so every logo feels the same visual size – use them directly as `width`/`height` attributes. `offsetX`/`offsetY` are optional sub-pixel corrections (see [Visual Center Offsets](#visual-center-offsets)).
+`width` and `height` are pixel dimensions normalized so every logo feels the same visual size – use them directly as `width`/`height` attributes. Both describe the logo's content bounding box, not the file's canvas, so crop each file to its logo. `offsetX`/`offsetY` are optional sub-pixel corrections (see [Visual Center Offsets](#visual-center-offsets)).
 
 ### Logo Strip
 
-The most common use case: a "trusted by" row or partner logo strip. Apply `width` and `height` directly – the normalization ensures all logos feel balanced side by side.
+The most common use case is a "trusted by" row or partner logo strip. Apply `width` and `height` directly – the normalization ensures all logos feel balanced side by side.
 
 ```html
 <div class="flex flex-wrap items-center justify-center gap-8">
@@ -61,12 +60,11 @@ The most common use case: a "trusted by" row or partner logo strip. Apply `width
 </div>
 ```
 
-> [!TIP]
-> The default `baseSize` is 64px, so a square logo renders at 64×64px. For a different base, pass `--base-size <n>` to the CLI (or `{ baseSize }` to `normalize()`), or scale uniformly with CSS – the proportions stay correct either way.
+The default `baseSize` is 64px. For a different base, pass `--base-size <n>` to the CLI (or `{ baseSize }` to `normalize()`), or scale uniformly with CSS – the proportions stay correct either way.
 
 ### Visual Center Offsets
 
-Some logos have visual weight that doesn't match their geometric center – a play button or an arrow, for instance. `offsetX`/`offsetY` correct for this by nudging the logo toward its optical center.
+Some logos have visual weight that does not match their geometric center – a play button or an arrow, for instance. `offsetX`/`offsetY` correct for this by nudging the logo toward its optical center.
 
 These offsets are typically small (< 2px) and `width`/`height` alone handle most of the balancing. For pixel-perfect alignment, apply them as CSS transforms:
 
@@ -74,11 +72,7 @@ These offsets are typically small (< 2px) and `width`/`height` alone handle most
 <img src="/logos/acme-wordmark.svg" width="143" height="28" style="transform: translate(0px, 0.5px)">
 ```
 
-For horizontal strips where only vertical alignment matters, you can apply just the Y offset:
-
-```html
-<img src="/logos/acme-wordmark.svg" width="143" height="28" style="transform: translateY(0.5px)">
-```
+In a horizontal strip, where only vertical alignment matters, `translateY(0.5px)` alone is enough.
 
 ## Programmatic API
 
@@ -102,9 +96,7 @@ for (const [file, metrics] of results) {
 
 ### `analyze`
 
-Analyzes a single logo image and returns its metrics, or `undefined` if no content is detected. Throws on I/O or decode errors.
-
-**Type Declaration:**
+Analyzes a single logo image and returns its metrics. An image without content returns the metrics of its whole canvas. Throws on I/O or decode errors.
 
 ```ts
 function analyze(filePath: string, options?: AnalyzeOptions): Promise<Metrics | undefined>
@@ -128,8 +120,6 @@ interface Metrics {
 
 Analyzes all matching images in a directory. Returns a `Map<string, Metrics>` where keys are filenames. Files that fail to decode are skipped instead of failing the whole batch.
 
-**Type Declaration:**
-
 ```ts
 function analyzeDirectory(dirPath: string, options?: AnalyzeDirectoryOptions): Promise<Map<string, Metrics>>
 
@@ -142,8 +132,6 @@ interface AnalyzeDirectoryOptions extends AnalyzeOptions {
 ### `normalize`
 
 Converts raw metrics into display dimensions using aspect ratio normalization with density compensation.
-
-**Type Declaration:**
 
 ```ts
 function normalize(metrics: Metrics, options?: NormalizeOptions): NormalizedDimensions
