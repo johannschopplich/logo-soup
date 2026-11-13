@@ -13,7 +13,7 @@ export async function analyze(
     contrastThreshold = CONTRAST_THRESHOLD,
   } = options
 
-  const { pixels, width, height, alphaOnly, bg } = await extractPixels(filePath, sampleMaxSize)
+  const { pixels, width, height, alphaOnly, background } = await extractPixels(filePath, sampleMaxSize)
 
   const contentBox = detectContentBoundingBox(
     pixels,
@@ -21,7 +21,7 @@ export async function analyze(
     height,
     contrastThreshold,
     alphaOnly,
-    bg,
+    background,
   )
 
   const visualCenter = calculateVisualCenter(
@@ -30,7 +30,7 @@ export async function analyze(
     contentBox,
     contrastThreshold,
     alphaOnly,
-    bg,
+    background,
   )
 
   const density = measurePixelDensity(
@@ -39,7 +39,7 @@ export async function analyze(
     contentBox,
     contrastThreshold,
     alphaOnly,
-    bg,
+    background,
   )
 
   return {
@@ -114,7 +114,7 @@ async function extractPixels(filePath: string, sampleMaxSize: number) {
     }
   }
 
-  let bg: RGB = { r: 255, g: 255, b: 255 }
+  let background: RGB = { r: 255, g: 255, b: 255 }
 
   if (!hasTransparency) {
     const corners = [
@@ -134,14 +134,14 @@ async function extractPixels(filePath: string, sampleMaxSize: number) {
       sumB += pixels[offset + 2]!
     }
 
-    bg = {
+    background = {
       r: Math.round(sumR / 4),
       g: Math.round(sumG / 4),
       b: Math.round(sumB / 4),
     }
   }
 
-  return { pixels, width, height, alphaOnly: hasTransparency, bg }
+  return { pixels, width, height, alphaOnly: hasTransparency, background }
 }
 
 function detectContentBoundingBox(
@@ -150,7 +150,7 @@ function detectContentBoundingBox(
   height: number,
   threshold: number,
   alphaOnly: boolean,
-  bg: RGB,
+  background: RGB,
 ): ContentBox {
   let minX = width
   let minY = height
@@ -165,7 +165,7 @@ function detectContentBoundingBox(
       const b = pixels[i + 2]!
       const a = pixels[i + 3]!
 
-      if (isContentPixel(r, g, b, a, threshold, alphaOnly, bg)) {
+      if (isContentPixel(r, g, b, a, threshold, alphaOnly, background)) {
         if (x < minX)
           minX = x
         if (y < minY)
@@ -196,7 +196,7 @@ function calculateVisualCenter(
   contentBox: ContentBox,
   threshold: number,
   alphaOnly: boolean,
-  bg: RGB,
+  background: RGB,
 ): { offsetX: number, offsetY: number } {
   let totalWeight = 0
   let weightedX = 0
@@ -212,7 +212,7 @@ function calculateVisualCenter(
       const b = pixels[i + 2]!
       const a = pixels[i + 3]!
 
-      if (!isContentPixel(r, g, b, a, threshold, alphaOnly, bg)) {
+      if (!isContentPixel(r, g, b, a, threshold, alphaOnly, background)) {
         continue
       }
 
@@ -222,9 +222,9 @@ function calculateVisualCenter(
         weight = a / 255
       }
       else {
-        const dr = r - bg.r
-        const dg = g - bg.g
-        const db = b - bg.b
+        const dr = r - background.r
+        const dg = g - background.g
+        const db = b - background.b
         const colorDistance = Math.sqrt(dr * dr + dg * dg + db * db)
         weight = Math.sqrt(colorDistance) * (a / 255)
       }
@@ -251,7 +251,7 @@ function measurePixelDensity(
   contentBox: ContentBox,
   threshold: number,
   alphaOnly: boolean,
-  bg: RGB,
+  background: RGB,
 ): number {
   const { x: bx, y: by, width: bw, height: bh } = contentBox
   const totalPixels = bw * bh
@@ -267,7 +267,7 @@ function measurePixelDensity(
       const b = pixels[i + 2]!
       const a = pixels[i + 3]!
 
-      if (isContentPixel(r, g, b, a, threshold, alphaOnly, bg)) {
+      if (isContentPixel(r, g, b, a, threshold, alphaOnly, background)) {
         filledPixels++
         totalOpacity += a / 255
       }
@@ -287,15 +287,15 @@ function isContentPixel(
   a: number,
   threshold: number,
   alphaOnly: boolean,
-  bg: RGB,
+  background: RGB,
 ): boolean {
   if (alphaOnly)
     return a > threshold
 
   return (
     a > threshold
-    && (Math.abs(r - bg.r) > threshold
-      || Math.abs(g - bg.g) > threshold
-      || Math.abs(b - bg.b) > threshold)
+    && (Math.abs(r - background.r) > threshold
+      || Math.abs(g - background.g) > threshold
+      || Math.abs(b - background.b) > threshold)
   )
 }
