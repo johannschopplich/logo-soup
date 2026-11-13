@@ -2,8 +2,10 @@ import type { Metrics } from '../src/index.ts'
 import * as path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { analyze, analyzeDirectory, normalize } from '../src/index.ts'
+import { useTemporaryDirectories } from './utils.ts'
 
 const fixturesDir = path.resolve(import.meta.dirname, 'fixtures')
+const createDirectory = useTemporaryDirectories()
 
 function makeMetrics(overrides: Partial<Metrics> = {}): Metrics {
   return {
@@ -69,6 +71,20 @@ describe('analyze', () => {
 
     expect(result).toBeDefined()
     expect(result!.pixelDensity).toBe(0)
+  })
+
+  it('returns a pixelDensity of 1 for white content on an opaque black background', async () => {
+    const directory = createDirectory({
+      'inverted.svg': `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">
+  <rect width="200" height="100" fill="black"/>
+  <rect x="50" y="25" width="100" height="50" fill="white"/>
+</svg>
+`,
+    })
+
+    const result = await analyze(path.join(directory, 'inverted.svg'))
+
+    expect(result!.pixelDensity).toBe(1)
   })
 
   it('throws for a non-existent file', async () => {

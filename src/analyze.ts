@@ -42,6 +42,7 @@ export async function analyze(
     contentBox,
     contrastThreshold,
     alphaOnly,
+    bg,
   )
 
   return {
@@ -250,6 +251,7 @@ function measurePixelDensity(
   contentBox: ContentBox,
   threshold: number,
   alphaOnly: boolean,
+  bg: RGB,
 ): number {
   const { x: bx, y: by, width: bw, height: bh } = contentBox
   const totalPixels = bw * bh
@@ -268,13 +270,7 @@ function measurePixelDensity(
       const b = pixels[i + 2]!
       const a = pixels[i + 3]!
 
-      if (
-        isContentPixel(r, g, b, a, threshold, alphaOnly, {
-          r: 255,
-          g: 255,
-          b: 255,
-        })
-      ) {
+      if (isContentPixel(r, g, b, a, threshold, alphaOnly, bg)) {
         filledPixels++
         totalOpacity += a / 255
       }
