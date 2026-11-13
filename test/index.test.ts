@@ -1,4 +1,5 @@
 import type { Metrics } from '../src/index.ts'
+import { readFileSync } from 'node:fs'
 import * as path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { analyze, analyzeDirectory, normalize } from '../src/index.ts'
@@ -85,6 +86,15 @@ describe('analyze', () => {
     const result = await analyze(path.join(directory, 'inverted.svg'))
 
     expect(result!.pixelDensity).toBe(1)
+  })
+
+  it('rasterizes LOGO.SVG like its lowercase counterpart', async () => {
+    const squarePath = path.join(fixturesDir, 'square.svg')
+    const directory = createDirectory({ 'LOGO.SVG': readFileSync(squarePath, 'utf-8') })
+
+    const result = await analyze(path.join(directory, 'LOGO.SVG'))
+
+    expect(result).toEqual(await analyze(squarePath))
   })
 
   it('throws for a non-existent file', async () => {

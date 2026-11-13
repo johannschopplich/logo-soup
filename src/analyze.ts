@@ -87,7 +87,7 @@ export async function analyzeDirectory(
 
 async function extractPixels(filePath: string, sampleMaxSize: number) {
   const buffer = await fsp.readFile(filePath)
-  const isSvg = filePath.endsWith('.svg')
+  const isSvg = path.extname(filePath).toLowerCase() === '.svg'
 
   let image = sharp(buffer, {
     ...(isSvg && { density: 96 }),
