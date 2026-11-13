@@ -5,7 +5,7 @@
 
 Logos come in all shapes – wide wordmarks, dense icons, tall monograms – and displaying them at the same CSS size makes some look huge while others nearly vanish.
 
-logo-soup analyzes SVG/PNG images with `sharp`, detects their content bounding box, measures pixel density and visual center, then normalizes dimensions so every logo feels perceptually balanced. Transparency is not required – for opaque images, the background color is estimated from the corner pixels and content is detected by contrast against it.
+logo-soup analyzes SVG/PNG images with `sharp` and computes a width and height for each, so that every logo feels perceptually balanced. Transparency is not required – an opaque logo works as long as its corners show the background color.
 
 ## Installation
 
@@ -50,7 +50,7 @@ Running the CLI produces a JSON file mapping each filename to its normalized dim
 
 ### Logo Strip
 
-The most common use case is a "trusted by" row or partner logo strip. Apply `width` and `height` directly – the normalization ensures all logos feel balanced side by side.
+In a "trusted by" row or partner logo strip, each logo takes its `width` and `height` from the JSON:
 
 ```html
 <div class="flex flex-wrap items-center justify-center gap-8">
