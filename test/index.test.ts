@@ -117,6 +117,25 @@ describe('analyzeDirectory', () => {
     }
   })
 
+  it.each(['.SVG', ' svg'])('includes .svg files for the extension "%s"', async (extension) => {
+    const results = await analyzeDirectory(fixturesDir, {
+      extensions: [extension],
+    })
+
+    expect([...results.keys()].sort()).toEqual(['empty.svg', 'square.svg', 'wide.svg'])
+  })
+
+  it('ignores an empty extension entry', async () => {
+    const svg = readFileSync(path.join(fixturesDir, 'square.svg'), 'utf8')
+    const directory = createDirectory({ 'square.svg': svg, 'logo': svg })
+
+    const results = await analyzeDirectory(directory, {
+      extensions: ['svg', ''],
+    })
+
+    expect([...results.keys()]).toEqual(['square.svg'])
+  })
+
   it('filters by extensions', async () => {
     const results = await analyzeDirectory(fixturesDir, {
       extensions: ['png'],

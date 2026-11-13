@@ -33,7 +33,7 @@ export interface NormalizeOptions {
 }
 
 export interface AnalyzeDirectoryOptions extends AnalyzeOptions {
-  /** File extensions to include (without dots). */
+  /** File extensions to include, case-insensitive, with or without a leading dot. */
   extensions?: string[]
 }
 

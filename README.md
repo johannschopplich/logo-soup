@@ -122,7 +122,7 @@ Analyzes all matching images in a directory. Returns a `Map<string, Metrics>` wh
 function analyzeDirectory(dirPath: string, options?: AnalyzeDirectoryOptions): Promise<Map<string, Metrics>>
 
 interface AnalyzeDirectoryOptions extends AnalyzeOptions {
-  /** File extensions to include, without dots (default: ["svg", "png"]) */
+  /** File extensions to include, case-insensitive, with or without a leading dot (default: ["svg", "png"]) */
   extensions?: string[]
 }
 ```

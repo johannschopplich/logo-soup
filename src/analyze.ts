@@ -59,8 +59,11 @@ export async function analyzeDirectory(
     ...analyzeOptions
   } = options
 
+  const normalizedExtensions = extensions
+    .map(ext => ext.trim().toLowerCase().replace(/^\./, ''))
+    .filter(Boolean)
   const files = (await fsp.readdir(dirPath))
-    .filter(entry => extensions.includes(
+    .filter(entry => normalizedExtensions.includes(
       path.extname(entry).slice(1).toLowerCase(),
     ))
 

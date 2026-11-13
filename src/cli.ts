@@ -66,9 +66,7 @@ export const mainCommand: CommandDef<typeof analyzeArgs> = defineCommand({
     const scaleFactor = parseNumericArg(args['scale-factor'], 'scale-factor', 'a number between 0 and 1', isUnitInterval)
     const densityFactor = parseNumericArg(args['density-factor'], 'density-factor', 'a number between 0 and 1', isUnitInterval)
 
-    const extensions = args.extensions
-      ? args.extensions.split(',').map(ext => ext.trim().toLowerCase())
-      : DEFAULT_EXTENSIONS
+    const extensions = args.extensions.split(',')
 
     const metricsMap = await analyzeDirectory(dirPath, { extensions })
     const results: Record<string, NormalizedDimensions> = {}
