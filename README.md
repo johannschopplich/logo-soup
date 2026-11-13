@@ -81,10 +81,8 @@ import { analyze, analyzeDirectory, normalize } from 'logo-soup'
 
 // Single file
 const metrics = await analyze('./logo.svg')
-if (metrics) {
-  const dimensions = normalize(metrics)
-  console.log(dimensions) // { width, height, offsetX, offsetY }
-}
+const dimensions = normalize(metrics)
+console.log(dimensions) // { width, height, offsetX, offsetY }
 
 // Batch
 const results = await analyzeDirectory('./logos', { extensions: ['svg', 'png'] })
@@ -99,7 +97,7 @@ for (const [file, metrics] of results) {
 Analyzes a single logo image and returns its metrics. An image without content returns the metrics of its whole canvas. Throws on I/O or decode errors.
 
 ```ts
-function analyze(filePath: string, options?: AnalyzeOptions): Promise<Metrics | undefined>
+function analyze(filePath: string, options?: AnalyzeOptions): Promise<Metrics>
 
 interface AnalyzeOptions {
   /** Maximum dimension for the resampled image used during analysis (default: 200) */

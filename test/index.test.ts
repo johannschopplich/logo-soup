@@ -55,23 +55,24 @@ describe('analyze', () => {
   it('returns near-unit content ratio for square SVGs', async () => {
     const result = await analyze(path.join(fixturesDir, 'square.svg'))
 
-    expect(result).toBeDefined()
-    expect(result!.contentRatio).toBeCloseTo(1, 0)
-    expect(result!.pixelDensity).toBeGreaterThan(0)
+    expect(result.contentRatio).toBeCloseTo(1, 0)
+    expect(result.pixelDensity).toBeGreaterThan(0)
   })
 
   it('returns high content ratio for wide SVGs', async () => {
     const result = await analyze(path.join(fixturesDir, 'wide.svg'))
 
-    expect(result).toBeDefined()
-    expect(result!.contentRatio).toBeGreaterThan(2)
+    expect(result.contentRatio).toBeGreaterThan(2)
   })
 
-  it('returns metrics with zero density for an empty SVG', async () => {
-    const result = await analyze(path.join(fixturesDir, 'empty.svg'))
+  it('returns the metrics of the whole canvas for an empty SVG', async () => {
+    const directory = createDirectory({
+      'empty.svg': '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="50" viewBox="0 0 200 50"/>\n',
+    })
 
-    expect(result).toBeDefined()
-    expect(result!.pixelDensity).toBe(0)
+    const result = await analyze(path.join(directory, 'empty.svg'))
+
+    expect(result).toEqual({ contentRatio: 4, pixelDensity: 0, visualCenterX: 0, visualCenterY: 0 })
   })
 
   it('returns a pixelDensity of 1 for white content on an opaque black background', async () => {
@@ -85,7 +86,7 @@ describe('analyze', () => {
 
     const result = await analyze(path.join(directory, 'inverted.svg'))
 
-    expect(result!.pixelDensity).toBe(1)
+    expect(result.pixelDensity).toBe(1)
   })
 
   it('rasterizes LOGO.SVG like its lowercase counterpart', async () => {

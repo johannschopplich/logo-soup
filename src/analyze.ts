@@ -7,7 +7,7 @@ import { CONTRAST_THRESHOLD, DEFAULT_EXTENSIONS, SAMPLE_MAX_SIZE } from './defau
 export async function analyze(
   filePath: string,
   options: AnalyzeOptions = {},
-): Promise<Metrics | undefined> {
+): Promise<Metrics> {
   const {
     sampleMaxSize = SAMPLE_MAX_SIZE,
     contrastThreshold = CONTRAST_THRESHOLD,
@@ -23,9 +23,6 @@ export async function analyze(
     alphaOnly,
     bg,
   )
-
-  if (contentBox.width === 0 || contentBox.height === 0)
-    return
 
   const visualCenter = calculateVisualCenter(
     pixels,
@@ -77,7 +74,7 @@ export async function analyzeDirectory(
   const results = new Map<string, Metrics>()
 
   for (const result of fileMetrics) {
-    if (result.status === 'fulfilled' && result.value.metrics) {
+    if (result.status === 'fulfilled') {
       results.set(result.value.file, result.value.metrics)
     }
   }
@@ -255,9 +252,6 @@ function measurePixelDensity(
 ): number {
   const { x: bx, y: by, width: bw, height: bh } = contentBox
   const totalPixels = bw * bh
-
-  if (totalPixels === 0)
-    return 0.5
 
   let filledPixels = 0
   let totalOpacity = 0
