@@ -4,7 +4,7 @@ import * as fsp from 'node:fs/promises'
 import * as path from 'node:path'
 import process from 'node:process'
 import { styleText } from 'node:util'
-import { CliError, defineCommand, log } from 'utilful/cli'
+import { ArgumentError, CliError, defineCommand, log } from 'utilful/cli'
 import pkg from '../package.json' with { type: 'json' }
 import { analyzeDirectory } from './analyze.ts'
 import { BASE_SIZE, DEFAULT_EXTENSIONS, DENSITY_FACTOR, SCALE_FACTOR } from './defaults.ts'
@@ -62,9 +62,9 @@ export const mainCommand: CommandDef<typeof analyzeArgs> = defineCommand({
     const dirPath = path.resolve(args.dir)
     await assertDirectory(dirPath)
 
-    const baseSize = parseNumericArg(args['base-size'], 'base-size')
-    const scaleFactor = parseNumericArg(args['scale-factor'], 'scale-factor')
-    const densityFactor = parseNumericArg(args['density-factor'], 'density-factor')
+    const baseSize = parseNumericArg(args['base-size'], 'base-size', 'a positive number', isPositiveFinite)
+    const scaleFactor = parseNumericArg(args['scale-factor'], 'scale-factor', 'a number between 0 and 1', isUnitInterval)
+    const densityFactor = parseNumericArg(args['density-factor'], 'density-factor', 'a number between 0 and 1', isUnitInterval)
 
     const extensions = args.extensions
       ? args.extensions.split(',').map(ext => ext.trim().toLowerCase())
@@ -116,11 +116,25 @@ async function assertDirectory(dirPath: string): Promise<void> {
     throw new CliError(`Not a directory: ${dirPath}`)
 }
 
-function parseNumericArg(value: string, name: string): number {
-  const parsedNumber = Number(value)
+function parseNumericArg(
+  value: string,
+  name: string,
+  expectation: string,
+  isInRange: (value: number) => boolean,
+): number {
+  // `Number` reads a blank string as 0.
+  const parsedNumber = value.trim() === '' ? Number.NaN : Number(value)
 
-  if (Number.isNaN(parsedNumber))
-    throw new CliError(`Invalid value for --${name}: "${value}" (expected a number)`)
+  if (!isInRange(parsedNumber))
+    throw new ArgumentError(`Invalid value for --${name}: "${value}" (expected ${expectation})`)
 
   return parsedNumber
+}
+
+function isPositiveFinite(value: number): boolean {
+  return value > 0 && Number.isFinite(value)
+}
+
+function isUnitInterval(value: number): boolean {
+  return value >= 0 && value <= 1
 }
