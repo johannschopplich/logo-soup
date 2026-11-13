@@ -46,7 +46,7 @@ Running the CLI produces a JSON file mapping each filename to its normalized dim
 }
 ```
 
-`width` and `height` are pixel dimensions normalized so every logo feels the same visual size – use them directly as `width`/`height` attributes. Both describe the logo's content bounding box, not the file's canvas, so crop each file to its logo. `offsetX`/`offsetY` are optional sub-pixel corrections (see [Visual Center Offsets](#visual-center-offsets)).
+`width` and `height` are pixel dimensions normalized so every logo feels the same visual size – use them directly as `width`/`height` attributes. Both describe the logo's content bounding box, not the file's canvas, so crop each file to its logo. `offsetX`/`offsetY` are optional corrections (see [Visual Center Offsets](#visual-center-offsets)).
 
 ### Logo Strip
 
@@ -66,7 +66,7 @@ The default `baseSize` is 64px. For a different base, pass `--base-size <n>` to 
 
 Some logos have visual weight that does not match their geometric center – a play button or an arrow, for instance. `offsetX`/`offsetY` correct for this by nudging the logo toward its optical center.
 
-These offsets are typically small (< 2px) and `width`/`height` alone handle most of the balancing. For pixel-perfect alignment, apply them as CSS transforms:
+These offsets are typically small, and `width`/`height` alone handle most of the balancing. For pixel-perfect alignment, apply them as CSS transforms:
 
 ```html
 <img src="/logos/acme-wordmark.svg" width="143" height="28" style="transform: translate(0px, 0.5px)">
