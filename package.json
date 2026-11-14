@@ -2,7 +2,7 @@
   "name": "logo-soup",
   "type": "module",
   "version": "0.2.3",
-  "packageManager": "pnpm@12.16.1",
+  "packageManager": "pnpm@12.18.0",
   "description": "Normalize logo dimensions for visual balance",
   "author": "Johann Schopplich <hello@johannschopplich.com>",
   "license": "MIT",
@@ -52,17 +52,17 @@
     "release": "bumpp"
   },
   "dependencies": {
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^9.2.0",
-    "@types/node": "^26.1.2",
-    "bumpp": "^12.1.1",
-    "eslint": "^10.8.0",
+    "@antfu/eslint-config": "^10.0.0",
+    "@types/node": "^26.6.6",
+    "bumpp": "^12.3.0",
+    "eslint": "^10.14.0",
     "eslint-flat-config-utils": "^3.2.0",
-    "tsdown": "^0.22.14",
+    "tsdown": "^0.23.7",
     "typescript": "^6.0.3",
     "utilful": "^3.5.1",
-    "vitest": "^4.1.10"
+    "vitest": "^5.1.0"
   }
 }
