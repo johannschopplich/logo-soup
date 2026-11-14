@@ -141,7 +141,13 @@ async function extractPixels(filePath: string, sampleMaxSize: number) {
     }
   }
 
-  return { pixels, width, height, alphaOnly: hasTransparency, background }
+  return {
+    pixels,
+    width,
+    height,
+    alphaOnly: hasTransparency,
+    background,
+  }
 }
 
 function detectContentBoundingBox(

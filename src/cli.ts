@@ -121,7 +121,9 @@ function parseNumericArg(
   isInRange: (value: number) => boolean,
 ): number {
   // `Number` reads a blank string as 0.
-  const parsedNumber = value.trim() === '' ? Number.NaN : Number(value)
+  const parsedNumber = value.trim() === ''
+    ? Number.NaN
+    : Number(value)
 
   if (!isInRange(parsedNumber))
     throw new ArgumentError(`Invalid value for --${name}: "${value}" (expected ${expectation})`)

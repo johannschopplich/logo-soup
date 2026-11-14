@@ -72,7 +72,12 @@ describe('analyze', () => {
 
     const result = await analyze(path.join(directory, 'empty.svg'))
 
-    expect(result).toEqual({ contentRatio: 4, pixelDensity: 0, visualCenterX: 0, visualCenterY: 0 })
+    expect(result).toEqual({
+      contentRatio: 4,
+      pixelDensity: 0,
+      visualCenterX: 0,
+      visualCenterY: 0,
+    })
   })
 
   it('returns a pixelDensity of 1 for white content on an opaque black background', async () => {
@@ -91,7 +96,9 @@ describe('analyze', () => {
 
   it('rasterizes LOGO.SVG like its lowercase counterpart', async () => {
     const squarePath = path.join(fixturesDir, 'square.svg')
-    const directory = createDirectory({ 'LOGO.SVG': readFileSync(squarePath, 'utf-8') })
+    const directory = createDirectory({
+      'LOGO.SVG': readFileSync(squarePath, 'utf-8'),
+    })
 
     const result = await analyze(path.join(directory, 'LOGO.SVG'))
 
@@ -122,7 +129,9 @@ describe('analyzeDirectory', () => {
       extensions: [extension],
     })
 
-    expect([...results.keys()].sort()).toEqual(['empty.svg', 'square.svg', 'wide.svg'])
+    expect([
+      ...results.keys(),
+    ].sort()).toEqual(['empty.svg', 'square.svg', 'wide.svg'])
   })
 
   it('ignores an empty extension entry', async () => {
@@ -133,7 +142,9 @@ describe('analyzeDirectory', () => {
       extensions: ['svg', ''],
     })
 
-    expect([...results.keys()]).toEqual(['square.svg'])
+    expect([
+      ...results.keys(),
+    ]).toEqual(['square.svg'])
   })
 
   it('filters by extensions', async () => {

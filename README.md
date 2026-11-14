@@ -85,7 +85,9 @@ const dimensions = normalize(metrics)
 console.log(dimensions) // { width, height, offsetX, offsetY }
 
 // Batch
-const results = await analyzeDirectory('./logos', { extensions: ['svg', 'png'] })
+const results = await analyzeDirectory('./logos', {
+  extensions: ['svg', 'png']
+})
 for (const [file, metrics] of results) {
   const dimensions = normalize(metrics)
   console.log(file, dimensions)
